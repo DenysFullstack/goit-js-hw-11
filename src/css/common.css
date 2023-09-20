@@ -24,3 +24,7 @@ ol {
     text-align: center;
 }
 
+.load-more{
+    margin: 0 auto;
+    display: block;
+}

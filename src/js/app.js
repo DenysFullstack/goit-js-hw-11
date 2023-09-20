@@ -1,27 +1,44 @@
-import { searchQuery } from './query-api';
+import { searchQuery,searchParams } from './query-api';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+
 import '../css/gallery.css';
 import Notiflix from 'notiflix';
 import { formEl, galleryEl, loadMoreBtn } from './refs';
 
+loadMoreBtn.classList.add('is-hidden');
+let currentPage = 1;
+
+let lightbox = new SimpleLightbox('.gallery div div a', {
+    captionsData: 'alt',
+    captionDelay: 250,
+    loop: false,
+});
+
 formEl.addEventListener('submit', onSubmit);
-loadMoreBtn.addEventListener('click', onMoreData)
 
 function onSubmit(e) {
   e.preventDefault();
+  loadMoreBtn.classList.add('is-hidden')
+  currentPage = 1;
   const formElements = e.currentTarget.elements;
   const input = formElements.searchQuery.value.trim();
   if(input===''){
-    return Notiflix.Notify.failure("Sorry, the input field cannot be empty. Please enter the name of the picture.")
+    return Notiflix.Notify.failure("Sorry, field search shouldn't be empty.")
   }
-  searchQuery(input)
+  searchParams.set('q', input)
+  searchParams.set('page', currentPage)
+  searchQuery()
     .then(imageCards => {
-        console.log(imageCards);
       galleryEl.innerHTML = renderCards(imageCards);
-      if(imageCards.total< 40) return
+      if(imageCards.total < searchParams.get('per_page')) return
       loadMoreBtn.classList.remove('is-hidden')
     })
     .catch(error => {
       console.log(error);
+    })
+    .finally(() => {
+        lightbox.refresh();
     });
 }
 
@@ -37,11 +54,13 @@ function renderCards(object) {
   console.log(object);
   const cards = object.hits;
   return cards
-    .map(({ webformatURL, tags, likes, views, comments, downloads }) => {
+    .map(({ largeImageURL,webformatURL, tags, likes, views, comments, downloads }) => {
       return `
         <div class="gallery-card">
         <div class="thumb">
+        <a class="gallery__link" href="${largeImageURL}">
         <img class="img-prev" src="${webformatURL}" alt="${tags}">
+        </a>
         </div>
         <ul class="card-atribute list">
             <li class="likes">
@@ -75,15 +94,23 @@ function renderCards(object) {
     .join('');
 }
 
+loadMoreBtn.addEventListener('click', onMoreData)
+
 function onMoreData(){
+    currentPage +=1
+    searchParams.set('page',currentPage)
     searchQuery()
     .then(imageCards => {
-        console.log(imageCards);
-      galleryEl.insertAdjacentHTML = ('beforeend', renderCards(imageCards));
-      if(imageCards.total< 40) return
-      loadMoreBtn.classList.remove('is-hidden')
+      galleryEl.insertAdjacentHTML('beforeend', renderCards(imageCards));
+      if(imageCards.hits.length< searchParams.get('per_page')) {
+        loadMoreBtn.classList.add('is-hidden')
+        return Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.")
+      }
     })
     .catch(error => {
       console.log(error);
+    })
+    .finally(() => {
+        lightbox.refresh();
     });
 }

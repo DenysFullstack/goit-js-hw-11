@@ -2,12 +2,23 @@ import axios from 'axios';
 import Notiflix from 'notiflix';
 
 const BASE_URL = 'https://pixabay.com/api/';
-const API_KEY = '39486130-41699e57d0dc4b3fd178f65df';
-const PER_PAGE = '40'
+// const API_KEY = '39486130-41699e57d0dc4b3fd178f65df';
+// const PER_PAGE = '40'
 
-async function searchQuery(text) {
+const searchParams = new URLSearchParams({
+  key: '39314249-b9f637c3b6d2b2c91ffe81f29',
+  q: '',
+  image_type: 'photo',
+  orientation: 'horizontal',
+  safesearch: true,
+  per_page: 40,
+  page: 1,
+});
+
+
+async function searchQuery() {
   const response = await axios.get(
-    `${BASE_URL}?key=${API_KEY}&q=${text}&image_type=photo&page=1&per_page=${PER_PAGE}`
+    `${BASE_URL}?${searchParams}`
   )
   if (response.data.totalHits === 0) {
     Notiflix.Notify.failure(
@@ -19,7 +30,7 @@ async function searchQuery(text) {
   return response.data;
 }
 
-export {searchQuery}
+export {searchQuery, searchParams}
 
 
 
