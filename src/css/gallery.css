@@ -1,0 +1,47 @@
+.gallery{
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.gallery-card{
+    display: flex;
+    flex-direction: column;
+}
+
+img {
+    display: block;
+}
+
+.thumb{
+    width:250px;
+    height: 180px;
+}
+
+.thumb > img {
+    display: block;
+    height: 100%;
+    width: 100%;
+  
+    object-fit: cover;
+}
+
+.card-atribute{
+    justify-content: space-between;
+}
+
+.hits-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.list-item{
+    font-size: 13px;
+    text-align: center;
+}
+
+.is-hidden{
+    display: none;
+}
