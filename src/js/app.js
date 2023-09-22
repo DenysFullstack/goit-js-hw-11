@@ -17,41 +17,36 @@ let lightbox = new SimpleLightbox('.gallery div div a', {
 
 formEl.addEventListener('submit', onSubmit);
 
-function onSubmit(e) {
+async function onSubmit(e) {
   e.preventDefault();
   loadMoreBtn.classList.add('is-hidden')
   currentPage = 1;
   const formElements = e.currentTarget.elements;
   const input = formElements.searchQuery.value.trim();
+  
   if(input===''){
     return Notiflix.Notify.failure("Sorry, field search shouldn't be empty.")
   }
   searchParams.set('q', input)
   searchParams.set('page', currentPage)
-  searchQuery()
-    .then(imageCards => {
-      galleryEl.innerHTML = renderCards(imageCards);
-      if(imageCards.total < searchParams.get('per_page')) return
-      loadMoreBtn.classList.remove('is-hidden')
-    })
-    .catch(error => {
-      console.log(error);
-    })
-    .finally(() => {
-        lightbox.refresh();
-    });
+  try {
+    const imageCards = await searchQuery()
+    galleryEl.innerHTML = renderCards(imageCards);
+    lightbox.refresh();
+    if(imageCards.total < searchParams.get('per_page')) return
+    loadMoreBtn.classList.remove('is-hidden')
+  } catch (error) {
+    console.log(error);
 }
-
-// webformatURL - посилання на маленьке зображення для списку карток.
-// largeImageURL - посилання на велике зображення.
-// tags - рядок з описом зображення. Підійде для атрибуту alt.
-// likes - кількість лайків.
-// views - кількість переглядів.
-// comments - кількість коментарів.
-// downloads - кількість завантажень.
+}
 
 function renderCards(object) {
   console.log(object);
+  if (object.hits.length===0){
+    Notiflix.Notify.failure(
+      'Sorry, there are no images matching your search query. Please try again.'
+     );
+  }
   const cards = object.hits;
   return cards
     .map(({ largeImageURL,webformatURL, tags, likes, views, comments, downloads }) => {
@@ -96,21 +91,21 @@ function renderCards(object) {
 
 loadMoreBtn.addEventListener('click', onMoreData)
 
-function onMoreData(){
+async function onMoreData(){
     currentPage +=1
     searchParams.set('page',currentPage)
-    searchQuery()
-    .then(imageCards => {
+    try {
+      const imageCards = await searchQuery()
+      let maxPages = imageCards.total/searchParams.get('per_page')
+      let totalPages = maxPages;
       galleryEl.insertAdjacentHTML('beforeend', renderCards(imageCards));
-      if(imageCards.hits.length< searchParams.get('per_page')) {
+      lightbox.refresh();
+
+      if(totalPages<Number(searchParams.get('page'))){
         loadMoreBtn.classList.add('is-hidden')
         return Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.")
       }
-    })
-    .catch(error => {
+    } catch (error) {
       console.log(error);
-    })
-    .finally(() => {
-        lightbox.refresh();
-    });
+    }
 }
