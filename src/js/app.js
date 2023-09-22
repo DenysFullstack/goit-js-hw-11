@@ -23,7 +23,7 @@ async function onSubmit(e) {
   currentPage = 1;
   const formElements = e.currentTarget.elements;
   const input = formElements.searchQuery.value.trim();
-  
+
   if(input===''){
     return Notiflix.Notify.failure("Sorry, field search shouldn't be empty.")
   }
@@ -96,8 +96,8 @@ async function onMoreData(){
     searchParams.set('page',currentPage)
     try {
       const imageCards = await searchQuery()
-      let maxPages = imageCards.total/searchParams.get('per_page')
-      let totalPages = maxPages;
+      let totalPages = imageCards.totalHits/searchParams.get('per_page')
+
       galleryEl.insertAdjacentHTML('beforeend', renderCards(imageCards));
       lightbox.refresh();
 
